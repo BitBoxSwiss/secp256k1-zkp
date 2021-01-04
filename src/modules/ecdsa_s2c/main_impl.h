@@ -66,7 +66,7 @@ static void secp256k1_s2c_ecdsa_data_sha256_tagged(secp256k1_sha256 *sha) {
 }
 
 int secp256k1_ecdsa_s2c_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signature* signature, secp256k1_ecdsa_s2c_opening* s2c_opening, const unsigned char
- *msg32, const unsigned char *seckey, const unsigned char* s2c_data32) {
+ *msg32, const unsigned char *seckey, const unsigned char* s2c_data32, int* recid) {
     secp256k1_scalar r, s;
     int ret;
     unsigned char ndata[32];
@@ -88,7 +88,7 @@ int secp256k1_ecdsa_s2c_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signa
     secp256k1_sha256_finalize(&s2c_sha, ndata);
 
     secp256k1_s2c_ecdsa_point_sha256_tagged(&s2c_sha);
-    ret = secp256k1_ecdsa_sign_inner(ctx, &r, &s, NULL, &s2c_sha, s2c_opening, s2c_data32, msg32, seckey, NULL, ndata);
+    ret = secp256k1_ecdsa_sign_inner(ctx, &r, &s, recid, &s2c_sha, s2c_opening, s2c_data32, msg32, seckey, NULL, ndata);
     secp256k1_scalar_cmov(&r, &secp256k1_scalar_zero, !ret);
     secp256k1_scalar_cmov(&s, &secp256k1_scalar_zero, !ret);
     secp256k1_ecdsa_signature_save(signature, &r, &s);
@@ -186,8 +186,8 @@ int secp256k1_ecdsa_anti_klepto_signer_commit(const secp256k1_context* ctx, secp
     return 1;
 }
 
-int secp256k1_anti_klepto_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signature* sig, const unsigned char* msg32, const unsigned char* seckey, const unsigned char* host_data32) {
-    return secp256k1_ecdsa_s2c_sign(ctx, sig, NULL, msg32, seckey, host_data32);
+int secp256k1_anti_klepto_sign(const secp256k1_context* ctx, secp256k1_ecdsa_signature* sig, const unsigned char* msg32, const unsigned char* seckey, const unsigned char* host_data32, int* recid) {
+    return secp256k1_ecdsa_s2c_sign(ctx, sig, NULL, msg32, seckey, host_data32, recid);
 }
 
 int secp256k1_anti_klepto_host_verify(const secp256k1_context* ctx, const secp256k1_ecdsa_signature *sig, const unsigned char *msg32, const secp256k1_pubkey *pubkey, const unsigned char *host_data32, const secp256k1_ecdsa_s2c_opening *opening) {
