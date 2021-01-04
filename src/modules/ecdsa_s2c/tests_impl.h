@@ -87,14 +87,14 @@ static void test_ecdsa_s2c_api(void) {
 
     CHECK(secp256k1_ec_pubkey_create(CTX, &pk, sec));
 
-    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, NULL, &s2c_opening, msg, sec, s2c_data));
+    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, NULL, &s2c_opening, msg, sec, s2c_data, NULL));
     /* NULL opening is not an API error */
-    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, NULL, msg, sec, s2c_data) == 1);
-    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, NULL, sec, s2c_data));
-    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, NULL, s2c_data));
-    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, sec, NULL));
-    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, sec, s2c_data) == 1);
-    CHECK_ILLEGAL(STATIC_CTX, secp256k1_ecdsa_s2c_sign(STATIC_CTX, &sig, &s2c_opening, msg, sec, s2c_data));
+    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, NULL, msg, sec, s2c_data, NULL) == 1);
+    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, NULL, sec, s2c_data, NULL));
+    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, NULL, s2c_data, NULL));
+    CHECK_ILLEGAL(CTX, secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, sec, NULL, NULL));
+    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, &s2c_opening, msg, sec, s2c_data, NULL) == 1);
+    CHECK_ILLEGAL(STATIC_CTX, secp256k1_ecdsa_s2c_sign(STATIC_CTX, &sig, &s2c_opening, msg, sec, s2c_data, NULL));
 
     CHECK(secp256k1_ecdsa_verify(CTX, &sig, msg, &pk) == 1);
 
@@ -106,7 +106,7 @@ static void test_ecdsa_s2c_api(void) {
     CHECK(secp256k1_ecdsa_s2c_verify_commit(CTX, &sig, sec, &s2c_opening) == 0);
 
     /* Signing with NULL s2c_opening gives the same result */
-    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, NULL, msg, sec, s2c_data) == 1);
+    CHECK(secp256k1_ecdsa_s2c_sign(CTX, &sig, NULL, msg, sec, s2c_data, NULL) == 1);
     CHECK(secp256k1_ecdsa_s2c_verify_commit(CTX, &sig, s2c_data, &s2c_opening) == 1);
 
     /* anti-exfil */
@@ -121,12 +121,12 @@ static void test_ecdsa_s2c_api(void) {
     CHECK(secp256k1_ecdsa_anti_exfil_signer_commit(CTX, &s2c_opening, msg, sec, hostrand_commitment) == 1);
     CHECK_ILLEGAL(STATIC_CTX, secp256k1_ecdsa_anti_exfil_signer_commit(STATIC_CTX, &s2c_opening, msg, sec, hostrand_commitment));
 
-    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, NULL, msg, sec, hostrand));
-    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, NULL, sec, hostrand));
-    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, msg, NULL, hostrand));
-    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, msg, sec, NULL));
-    CHECK(secp256k1_anti_exfil_sign(CTX, &sig, msg, sec, hostrand) == 1);
-    CHECK_ILLEGAL(STATIC_CTX, secp256k1_anti_exfil_sign(STATIC_CTX, &sig, msg, sec, hostrand));
+    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, NULL, msg, sec, hostrand, NULL));
+    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, NULL, sec, hostrand, NULL));
+    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, msg, NULL, hostrand, NULL));
+    CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_sign(CTX, &sig, msg, sec, NULL, NULL));
+    CHECK(secp256k1_anti_exfil_sign(CTX, &sig, msg, sec, hostrand, NULL) == 1);
+    CHECK_ILLEGAL(STATIC_CTX, secp256k1_anti_exfil_sign(STATIC_CTX, &sig, msg, sec, hostrand, NULL));
 
     CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_host_verify(CTX, NULL, msg, &pk, hostrand, &s2c_opening));
     CHECK_ILLEGAL(CTX, secp256k1_anti_exfil_host_verify(CTX, &sig, NULL, &pk, hostrand, &s2c_opening));
@@ -175,7 +175,7 @@ static void test_ecdsa_s2c_fixed_vectors(void) {
         unsigned char opening_ser[33];
         const ecdsa_s2c_test *test = &ecdsa_s2c_tests[i];
         secp256k1_ecdsa_signature signature;
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, test->s2c_data) == 1);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, test->s2c_data, NULL) == 1);
         CHECK(secp256k1_ecdsa_s2c_opening_serialize(CTX, opening_ser, &s2c_opening) == 1);
         CHECK(secp256k1_memcmp_var(test->expected_s2c_opening, opening_ser, sizeof(opening_ser)) == 0);
         CHECK(secp256k1_ecdsa_s2c_verify_commit(CTX, &signature, test->s2c_data, &s2c_opening) == 1);
@@ -208,12 +208,12 @@ static void test_ecdsa_s2c_sign_verify(void) {
     { /* invalid privkeys */
         unsigned char zero_privkey[32] = {0};
         unsigned char overflow_privkey[32] = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, NULL, message, zero_privkey, s2c_data) == 0);
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, NULL, message, overflow_privkey, s2c_data) == 0);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, NULL, message, zero_privkey, s2c_data, NULL) == 0);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, NULL, message, overflow_privkey, s2c_data, NULL) == 0);
     }
     /* Check that the sign-to-contract signature is valid, with s2c_data. Also check the commitment. */
     {
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, s2c_data) == 1);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, s2c_data, NULL) == 1);
         CHECK(secp256k1_ecdsa_verify(CTX, &signature, message, &pubkey) == 1);
         CHECK(secp256k1_ecdsa_s2c_verify_commit(CTX, &signature, s2c_data, &s2c_opening) == 1);
     }
@@ -221,7 +221,7 @@ static void test_ecdsa_s2c_sign_verify(void) {
     {
         unsigned char sigbytes[64];
         size_t i;
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, s2c_data) == 1);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, message, privkey, s2c_data, NULL) == 1);
         CHECK(secp256k1_ecdsa_verify(CTX, &signature, message, &pubkey) == 1);
 
         CHECK(secp256k1_ecdsa_signature_serialize_compact(CTX, sigbytes, &signature) == 1);
@@ -283,7 +283,7 @@ static void test_ecdsa_anti_exfil(void) {
     CHECK(secp256k1_ecdsa_anti_exfil_signer_commit(CTX, &s2c_opening, host_msg, signer_privkey, host_commitment) == 1);
     /* Protocol step 3: host_nonce_contribution send to signer to be used in step 4. */
     /* Protocol step 4. */
-    CHECK(secp256k1_anti_exfil_sign(CTX, &signature, host_msg, signer_privkey, host_nonce_contribution) == 1);
+    CHECK(secp256k1_anti_exfil_sign(CTX, &signature, host_msg, signer_privkey, host_nonce_contribution, NULL) == 1);
     /* Protocol step 5. */
     CHECK(secp256k1_anti_exfil_host_verify(CTX, &signature, host_msg, &signer_pubkey, host_nonce_contribution, &s2c_opening) == 1);
     /* Protocol step 5 (explicitly) */
@@ -314,7 +314,7 @@ static void test_ecdsa_anti_exfil(void) {
     { /* s2c_sign: host provided data that didn't match commitment */
         secp256k1_ecdsa_s2c_opening orig_opening = s2c_opening;
         unsigned char bad_nonce_contribution[32] = { 1, 2, 3, 4 };
-        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, host_msg, signer_privkey, bad_nonce_contribution) == 1);
+        CHECK(secp256k1_ecdsa_s2c_sign(CTX, &signature, &s2c_opening, host_msg, signer_privkey, bad_nonce_contribution, NULL) == 1);
         /* good signature but the opening (original public nonce does not match the original */
         CHECK(secp256k1_ecdsa_verify(CTX, &signature, host_msg, &signer_pubkey) == 1);
         CHECK(secp256k1_anti_exfil_host_verify(CTX, &signature, host_msg, &signer_pubkey, host_nonce_contribution, &s2c_opening) == 0);

@@ -227,7 +227,7 @@ static void run_tests(secp256k1_context *ctx, unsigned char *key) {
 
         SECP256K1_CHECKMEM_UNDEFINE(key, 32);
         SECP256K1_CHECKMEM_UNDEFINE(s2c_data, 32);
-        ret = secp256k1_ecdsa_s2c_sign(ctx, &signature, &s2c_opening, msg, key, s2c_data);
+        ret = secp256k1_ecdsa_s2c_sign(ctx, &signature, &s2c_opening, msg, key, s2c_data, NULL);
         SECP256K1_CHECKMEM_DEFINE(&ret, sizeof(ret));
         CHECK(ret == 1);
 
