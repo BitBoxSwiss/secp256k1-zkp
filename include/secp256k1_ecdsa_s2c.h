@@ -76,7 +76,8 @@ SECP256K1_API int secp256k1_ecdsa_s2c_sign(
     secp256k1_ecdsa_s2c_opening *s2c_opening,
     const unsigned char *msg32,
     const unsigned char *seckey,
-    const unsigned char *s2c_data32
+    const unsigned char *s2c_data32,
+    int* recid
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5) SECP256K1_ARG_NONNULL(6);
 
 /** Verify a sign-to-contract commitment.
@@ -204,7 +205,8 @@ SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_anti_exfil_sign(
     secp256k1_ecdsa_signature *sig,
     const unsigned char *msg32,
     const unsigned char *seckey,
-    const unsigned char *host_data32
+    const unsigned char *host_data32,
+    int *recid
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5);
 
 /** Verify a signature was correctly constructed using the ECDSA Anti-Exfil Protocol.
