@@ -155,4 +155,58 @@ static int secp256k1_dleq_verify(const secp256k1_scalar *s, const secp256k1_scal
     return secp256k1_scalar_is_zero(&e_expected);
 }
 
+int bitbox_secp256k1_dleq_prove(const secp256k1_context* ctx, unsigned char *s, unsigned char *e, const unsigned char *sk, const secp256k1_pubkey *gen2, const secp256k1_pubkey *p1, const secp256k1_pubkey *p2)
+{
+    secp256k1_ge c_gen2;
+    secp256k1_ge c_p1;
+    secp256k1_ge c_p2;
+    secp256k1_scalar c_s;
+    secp256k1_scalar c_e;
+    secp256k1_scalar c_sk;
+    int result;
+    if (!secp256k1_pubkey_load(ctx, &c_gen2, gen2)) {
+        return 0;
+    }
+    if (!secp256k1_pubkey_load(ctx, &c_p1, p1)) {
+        return 0;
+    }
+    if (!secp256k1_pubkey_load(ctx, &c_p2, p2)) {
+        return 0;
+    }
+    if (!secp256k1_scalar_set_b32_seckey(&c_sk, sk)) {
+        return 0;
+    }
+    result = secp256k1_dleq_prove(ctx, &c_s, &c_e, &c_sk, &c_gen2, &c_p1, &c_p2, NULL, NULL);
+    secp256k1_scalar_clear(&c_sk);
+    if (!result) {
+        return 0;
+    }
+    secp256k1_scalar_get_b32(s, &c_s);
+    secp256k1_scalar_get_b32(e, &c_e);
+    return 1;
+}
+
+int bitbox_secp256k1_dleq_verify(const secp256k1_context* ctx, const unsigned char *s, const unsigned char *e, const secp256k1_pubkey *p1, const secp256k1_pubkey *gen2, const secp256k1_pubkey *p2) {
+    secp256k1_scalar c_s;
+    secp256k1_scalar c_e;
+    secp256k1_ge c_p1;
+    secp256k1_ge c_gen2;
+    secp256k1_ge c_p2;
+    secp256k1_scalar_set_b32(&c_s, s, NULL);
+    secp256k1_scalar_set_b32(&c_e, e, NULL);
+    if (!secp256k1_pubkey_load(ctx, &c_p1, p1)) {
+        return 0;
+    }
+    if (!secp256k1_pubkey_load(ctx, &c_gen2, gen2)) {
+        return 0;
+    }
+    if (!secp256k1_pubkey_load(ctx, &c_p2, p2)) {
+        return 0;
+    }
+    if (!secp256k1_dleq_verify(&c_s, &c_e, &c_p1, &c_gen2, &c_p2)) {
+        return 0;
+    }
+    return 1;
+}
+
 #endif
