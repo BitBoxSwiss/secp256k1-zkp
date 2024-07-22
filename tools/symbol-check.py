@@ -42,7 +42,7 @@ def grep_expected_symbols() -> list[str]:
         encoding="utf-8"
     )
     lines = grep_output.split("\n")
-    pattern = re.compile(r'\bsecp256k1_\w+')
+    pattern = re.compile(r'\b(?:bitbox_)?secp256k1_\w+')
     exported: list[str] = [pattern.findall(line)[-1] for line in lines if line.strip()]
     return exported
 
