@@ -157,6 +157,30 @@ SECP256K1_API int secp256k1_ecdsa_adaptor_recover(
     const secp256k1_pubkey *enckey
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5);
 
+
+/**
+ * This exposes `secp256k1_dleq_prove()` in dleq_impl.h so the BitBox firmware can use it.
+ */
+SECP256K1_API int bitbox_secp256k1_dleq_prove(
+    const secp256k1_context* ctx,
+    unsigned char *s,
+    unsigned char *e,
+    const unsigned char *sk,
+    const secp256k1_pubkey *gen2,
+    const secp256k1_pubkey *p1,
+    const secp256k1_pubkey *p2);
+
+/**
+ * This exposes `secp256k1_dleq_verify()` in dleq_impl.h so the BitBox firmware can use it.
+ */
+SECP256K1_API int bitbox_secp256k1_dleq_verify(
+    const secp256k1_context* ctx,
+    const unsigned char *s,
+    const unsigned char *e,
+    const secp256k1_pubkey *p1,
+    const secp256k1_pubkey *gen2,
+    const secp256k1_pubkey *p2);
+
 #ifdef __cplusplus
 }
 #endif
